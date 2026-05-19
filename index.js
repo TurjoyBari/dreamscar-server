@@ -47,7 +47,6 @@ async function run() {
         res.send(result);
 
     })
-
     app.get("/cars/:carId", async(req , res)=> {
         const {carId} = req.params;
         const qury = {_id : new ObjectId(carId)}
