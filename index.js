@@ -5,8 +5,11 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 
 const app = express();
-dotenv.config()
+
+dotenv.config();
+
 app.use(cors());
+app.use(express.json());
 
 const port = process.env.PORT || 8080;
 
@@ -64,6 +67,7 @@ async function run() {
 
     const db = client.db("dreamscardb");
     const carCollection = db.collection("car");
+    const bookingCollection = db.collection("booking");
 
     app.get("/cars", async(req , res)=> {
         const cursor = carCollection.find();
@@ -86,7 +90,35 @@ async function run() {
 
     })
 
+    app.patch('/booking/:carId', verifyToken, async (req, res) => {
+      //   console.log('from enrollment');
 
+      const { carId } = req.params;
+      const bookingData = req.body;
+
+      const carBooking = await carCollection.findOne({ _id: new ObjectId(carId) });
+
+      if (!carBooking) {
+        return res.status(404).json({ message: 'Car not found' });
+      }
+      await carCollection.updateOne(
+        { _id: new ObjectId(carId) },
+        {
+          $inc: { bookingCount: 1 },
+          $set: {
+            lastbookingAt: new Date(),
+          },
+        }
+      );
+      //   console.log(enrollmentData);
+
+      const result = await bookingCollection.insertOne({
+        ...bookingData,
+        bookingAt: new Date(),
+      });
+
+      res.send(result);
+    });
 
 
 
