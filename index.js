@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { createRemoteJWKSet, jwtVerify } = require('jose-cjs');
 
 const app = express();
 dotenv.config()
@@ -13,7 +14,7 @@ const port = process.env.PORT || 8080;
 
 
 
-const uri = "mongodb+srv://dreamscar:Pp2zxovX2lD9tVYu@cluster0.z1xv2vy.mongodb.net/?appName=Cluster0";
+const uri = process.env.MONGODB_URI;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -23,6 +24,36 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+
+
+const logger = (req, res, next) => {
+  console.log(`${req.method} | ${req.url}`);
+  next();
+};
+
+const verifyToken = async (req, res, next) => {
+  const { authorization } = req.headers;
+  //   console.log(req.headers, 'from verify token');
+  const token = authorization?.split(' ')[1];
+  //   console.log(token);
+
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorize' });
+  }
+
+  try {
+    const JWKS = createRemoteJWKSet(new URL('http://localhost:3000/api/auth/jwks'));
+    const { payload } = await jwtVerify(token, JWKS);
+    req.user = payload;
+
+    next();
+  } catch (error) {
+    console.error('Token validation failed:', error);
+    return res.status(401).json({ message: 'Unauthorize' });
+  }
+};
+
+
 
 async function run() {
   try {
@@ -47,7 +78,7 @@ async function run() {
         res.send(result);
 
     })
-    app.get("/cars/:carId", async(req , res)=> {
+    app.get("/cars/:carId", logger, verifyToken, async(req , res)=> {
         const {carId} = req.params;
         const qury = {_id : new ObjectId(carId)}
         const result = await carCollection.findOne(qury);
