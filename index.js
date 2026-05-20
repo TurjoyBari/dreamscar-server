@@ -90,6 +90,13 @@ async function run() {
 
     })
 
+
+    app.get('/booking/:userId', verifyToken, async (req, res) => {
+      const { userId } = req.params;
+      const result = await bookingCollection.find({ userId: userId }).toArray();
+      res.send(result);
+    });
+
     app.patch('/booking/:carId', verifyToken, async (req, res) => {
       //   console.log('from enrollment');
 
