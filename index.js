@@ -16,7 +16,6 @@ const port = process.env.PORT || 8080;
 
 
 
-
 const uri = process.env.MONGODB_URI;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -69,6 +68,29 @@ async function run() {
     const carCollection = db.collection("car");
     const bookingCollection = db.collection("booking");
 
+app.post("/cars", verifyToken, async (req, res) => {
+  try {
+    const data = req.body;
+
+    const carData = {
+      ...data,
+      createdAt: new Date(),
+      bookingCount: 0,
+    };
+
+    const result = await carCollection.insertOne(carData);
+
+    res.send({
+      success: true,
+      insertedId: result.insertedId,
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({ success: false });
+  }
+});
+
     app.get("/cars", async(req , res)=> {
         const cursor = carCollection.find();
         const result = await cursor.toArray();
@@ -89,6 +111,36 @@ async function run() {
         res.send(result);
 
     })
+
+  app.delete('/booking/:id', verifyToken, async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const query = {
+      _id: new ObjectId(id)
+    };
+
+    const result = await bookingCollection.deleteOne(query);
+
+    res.send({
+      success: true,
+      deletedCount: result.deletedCount
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).send({
+      success: false,
+      message: 'Failed to delete booking'
+    });
+
+  }
+
+});
 
 
     app.get('/booking/:userId', verifyToken, async (req, res) => {
