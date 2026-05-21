@@ -29,7 +29,7 @@ const client = new MongoClient(uri, {
 
 
 const logger = (req, res, next) => {
-  console.log(`${req.method} | ${req.url}`);
+  // console.log(`${req.method} | ${req.url}`);
   next();
 };
 
@@ -44,7 +44,7 @@ const verifyToken = async (req, res, next) => {
   }
 
   try {
-    const JWKS = createRemoteJWKSet(new URL('http://localhost:3000/api/auth/jwks'));
+    const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
     const { payload } = await jwtVerify(token, JWKS);
     req.user = payload;
 
@@ -60,7 +60,7 @@ const verifyToken = async (req, res, next) => {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
 
@@ -86,10 +86,12 @@ app.post("/cars", verifyToken, async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     res.status(500).send({ success: false });
   }
 });
+
+
 
     app.get("/cars", async(req , res)=> {
         const cursor = carCollection.find();
@@ -131,7 +133,7 @@ app.post("/cars", verifyToken, async (req, res) => {
 
   } catch (error) {
 
-    console.log(error);
+    // console.log(error);
 
     res.status(500).send({
       success: false,
@@ -186,7 +188,7 @@ app.post("/cars", verifyToken, async (req, res) => {
 
 
 
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
@@ -204,5 +206,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  // console.log(`Example app listening on port ${port}`);
 });
