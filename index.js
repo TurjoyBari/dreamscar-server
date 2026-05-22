@@ -33,56 +33,25 @@ const logger = (req, res, next) => {
   next();
 };
 
-// const verifyToken = async (req, res, next) => {
-//   const { authorization } = req.headers;
-//   //   console.log(req.headers, 'from verify token');
-//   const token = authorization?.split(' ')[1];
-//   //   console.log(token);
-
-//   if (!token) {
-//     return res.status(401).json({ message: 'Unauthorize' });
-//   }
-
-//   try {
-//     const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
-//     const { payload } = await jwtVerify(token, JWKS);
-//     req.user = payload;
-
-//     next();
-//   } catch (error) {
-//     console.error('Token validation failed:', error);
-//     return res.status(401).json({ message: 'Unauthorize' });
-//   }
-// };
 const verifyToken = async (req, res, next) => {
   const { authorization } = req.headers;
-
+  //   console.log(req.headers, 'from verify token');
   const token = authorization?.split(' ')[1];
+  //   console.log(token);
 
   if (!token) {
     return res.status(401).json({ message: 'Unauthorize' });
   }
 
   try {
-
-    const JWKS = createRemoteJWKSet(
-      new URL(`${process.env.CLIENT_URL}/api/auth/jwks`)
-    );
-
+    const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
     const { payload } = await jwtVerify(token, JWKS);
-
     req.user = payload;
 
     next();
-
   } catch (error) {
-
     console.error('Token validation failed:', error);
-
-    return res.status(401).json({
-      message: 'Unauthorize',
-      error: error.message
-    });
+    return res.status(401).json({ message: 'Unauthorize' });
   }
 };
 
