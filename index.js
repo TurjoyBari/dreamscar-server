@@ -92,6 +92,50 @@ app.post("/cars", verifyToken, async (req, res) => {
 });
 
 
+app.get("/cars/user/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const result = await carCollection
+      .find({ userId: id })
+      .toArray();
+
+    res.send(result);
+
+  } catch (error) {
+    res.status(500).send({
+      message: error.message
+    });
+  }
+});
+
+
+app.delete('/cars/:id', verifyToken, async (req, res) => {
+
+  try {
+
+    const { id } = req.params;
+
+    const result = await carCollection.deleteOne({
+      _id: new ObjectId(id)
+    });
+
+    res.send({
+      success: true,
+      deletedCount: result.deletedCount
+    });
+
+  } catch (error) {
+
+    res.status(500).send({
+      success: false,
+      message: error.message
+    });
+
+  }
+
+});
+
 
     app.get("/cars", async(req , res)=> {
         const cursor = carCollection.find();
